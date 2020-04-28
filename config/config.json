@@ -1,0 +1,19 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "permission-matrix-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/permissionMatrix/PermissionMatrixWebPart.js",
+          "manifest": "./src/webparts/permissionMatrix/PermissionMatrixWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "PermissionMatrixWebPartStrings": "lib/webparts/permissionMatrix/loc/{locale}.js",
+    "PropertyControlStrings": "node_modules/@pnp/spfx-property-controls/lib/loc/{locale}.js"
+  }
+}
