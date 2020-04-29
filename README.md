@@ -17,7 +17,7 @@ npm install --global gulp
 Download & install all dependencies, build, bundle & package the project
 
 ```shell
-# download & install dependencies
+# download & install dependencies (built using npm v10.18)
 npm install
 
 # transpile all TypeScript & SCSS => JavaScript & CSS

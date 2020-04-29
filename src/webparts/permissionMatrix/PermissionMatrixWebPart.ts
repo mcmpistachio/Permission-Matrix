@@ -57,7 +57,7 @@ export default class PermissionMatrixWebPart extends BaseClientSideWebPart <IPer
                   context: this.context,
                   properties: this.properties.people,
                   deferredValidationTime: 0,
-                  key: 'people'
+                  key: 'peoplePicker'
                 })
               ]
             }

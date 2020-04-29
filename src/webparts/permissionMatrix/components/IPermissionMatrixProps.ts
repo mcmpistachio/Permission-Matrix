@@ -5,6 +5,6 @@ export interface IPermissionMatrixProps {
   people: IPropertyFieldGroupOrPerson[];
 }
 
-// export interface IPropertyControlsTestWebPartProps {
-//   people: IPropertyFieldGroupOrPerson[];
-// }
+//  export interface IPropertyControlsTestWebPartProps {
+//    people: IPropertyFieldGroupOrPerson[];
+//  }
