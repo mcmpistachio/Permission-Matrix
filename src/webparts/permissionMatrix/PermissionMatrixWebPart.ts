@@ -61,6 +61,12 @@ export default class PermissionMatrixWebPart extends BaseClientSideWebPart <IPer
                   key: 'peoplePicker'
                 })
               ]
+            },
+            {
+              groupName: 'Select Groups to Grant Permissions',
+              groupFields: [
+                //custom Group Picker
+              ]
             }
           ]
         }

@@ -20,11 +20,12 @@
     "@microsoft/sp-page-context": "^1.10.0",
     "@microsoft/sp-property-pane": "1.10.0",
     "@microsoft/sp-webpart-base": "1.10.0",
-    "@pnp/spfx-property-controls": "1.17.0",
+    "@pnp/spfx-property-controls": "^1.18.0-beta.c1ff6da",
     "@types/es6-promise": "0.0.33",
     "@types/react": "16.8.8",
     "@types/react-dom": "16.8.3",
     "@types/webpack-env": "1.13.1",
+    "@uifabric/example-data": "^7.0.12",
     "office-ui-fabric-react": "6.189.2",
     "react": "16.8.5",
     "react-dom": "16.8.5"

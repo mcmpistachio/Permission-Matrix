@@ -25,7 +25,7 @@ export const PeoplePickerPreselectedItemsExample: React.FunctionComponent = () =
   const [delayResults, setDelayResults] = React.useState(false);
   const [isPickerDisabled, setIsPickerDisabled] = React.useState(false);
   const [mostRecentlyUsed, setMostRecentlyUsed] = React.useState<IPersonaProps[]>(mru);
-  const [peopleList, setPeopleList] = React.useState<IPersonaProps[]>(getPeople);
+  const [peopleList, setPeopleList] = React.useState<IPersonaProps[]>(people);
 
   const picker = React.useRef(null);
 
