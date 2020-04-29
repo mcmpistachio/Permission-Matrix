@@ -12,6 +12,7 @@ import PermissionMatrix from './components/PermissionMatrix';
 import { IPermissionMatrixProps } from './components/IPermissionMatrixProps';
 import { IPropertyFieldGroupOrPerson } from "@pnp/spfx-property-controls/lib/PropertyFieldPeoplePicker";
 import { selectProperties } from 'office-ui-fabric-react/lib/Utilities';
+import PropertyFieldPeoplePickerHost from '@pnp/spfx-property-controls/lib/propertyFields/peoplePicker/PropertyFieldPeoplePickerHost';
 
 export interface IPermissionMatrixWebPartProps {
   description: string;
