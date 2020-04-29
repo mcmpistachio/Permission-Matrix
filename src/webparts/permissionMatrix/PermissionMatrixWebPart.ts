@@ -1,10 +1,7 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
-import {
-  IPropertyPaneConfiguration,
-  PropertyPaneTextField
-} from '@microsoft/sp-property-pane';
+import { IPropertyPaneConfiguration, PropertyPaneDynamicField } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import { PropertyFieldPeoplePicker, PrincipalType } from '@pnp/spfx-property-controls/lib/PropertyFieldPeoplePicker';
 import * as strings from 'PermissionMatrixWebPartStrings';
@@ -13,10 +10,12 @@ import { IPermissionMatrixProps } from './components/IPermissionMatrixProps';
 import { IPropertyFieldGroupOrPerson } from "@pnp/spfx-property-controls/lib/PropertyFieldPeoplePicker";
 import { selectProperties } from 'office-ui-fabric-react/lib/Utilities';
 import PropertyFieldPeoplePickerHost from '@pnp/spfx-property-controls/lib/propertyFields/peoplePicker/PropertyFieldPeoplePickerHost';
+import { CompactPeoplePicker } from 'office-ui-fabric-react/lib/Pickers';
 
 export interface IPermissionMatrixWebPartProps {
   description: string;
   people: IPropertyFieldGroupOrPerson[];
+  groups: string[];
 }
 
 export default class PermissionMatrixWebPart extends BaseClientSideWebPart <IPermissionMatrixProps> {
@@ -26,7 +25,8 @@ export default class PermissionMatrixWebPart extends BaseClientSideWebPart <IPer
       PermissionMatrix,
       {
         description: this.properties.description,
-        people: this.properties.people
+        people: this.properties.people,
+        groups: this.properties.groups
       }
     );
 
@@ -54,7 +54,7 @@ export default class PermissionMatrixWebPart extends BaseClientSideWebPart <IPer
                   initialData: this.properties.people,
                   allowDuplicate: false,
                   principalType: [PrincipalType.Security, PrincipalType.Users],
-                  onPropertyChange: this.onPropertyPaneFieldChanged,
+                  onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
                   context: this.context,
                   properties: this.properties.people,
                   deferredValidationTime: 0,

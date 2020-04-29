@@ -3,7 +3,7 @@ import { Checkbox } from 'office-ui-fabric-react/lib/Checkbox';
 import { IPersonaProps } from 'office-ui-fabric-react/lib/Persona';
 import { CompactPeoplePicker, IBasePickerSuggestionsProps, ValidationState } from 'office-ui-fabric-react/lib/Pickers';
 import { people, mru } from '@uifabric/example-data';
-import { MSGraphClient } from '@microsoft/sp-http';
+import { IPermissionMatrixProps } from './IPermissionMatrixProps';
 
 const suggestionProps: IBasePickerSuggestionsProps = {
   suggestionsHeaderText: 'Suggested People',
@@ -21,7 +21,7 @@ const checkboxStyles = {
   },
 };
 
-export const PeoplePickerPreselectedItemsExample: React.FunctionComponent = () => {
+export const PeoplePickerPreselectedItemsExample: React.FunctionComponent<IPermissionMatrixProps> = () => {
   const [delayResults, setDelayResults] = React.useState(false);
   const [isPickerDisabled, setIsPickerDisabled] = React.useState(false);
   const [mostRecentlyUsed, setMostRecentlyUsed] = React.useState<IPersonaProps[]>(mru);
@@ -145,17 +145,4 @@ function validateInput(input: string): ValidationState {
   } else {
     return ValidationState.invalid;
   }
-}
-
-function getPeople(): any {
-  this.context.msGraphClientFactory
-  .getClient()
-  .then((client: MSGraphClient): void => {
-    client
-      .api('/groups/')
-      .get((error, response: any, rawResponse?: any) => {
-        // handle the response
-        return response
-    });
-  });
 }

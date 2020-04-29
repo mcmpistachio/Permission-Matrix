@@ -49,6 +49,18 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     } as IColumn,
   ];
 
+  // private _DymanicColumns: IColumn[] = [
+  //   this.context.properties.people.forEach(element => [
+  //       {
+  //         key: element.id,
+  //         name: element.name,
+  //         onRender: item => (
+  //           <DropPermissionItem/>
+  //         )
+  //       } as IColumn,
+  //     ])
+  // ];
+
   public render(): JSX.Element {
     // By default, when the list is re-rendered on navigation or some other event,
     // focus goes to the list container and the user has to tab back into the list body.
