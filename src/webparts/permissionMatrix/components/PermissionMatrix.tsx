@@ -24,6 +24,10 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     key: 0,
   };
 
+  private _dynamicColumn: IColumn[] = [
+
+  ];
+
   private _columns: IColumn[] = [
     {
       key: 'filepath',
@@ -47,19 +51,8 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
         <DropPermissionItem/>
       )
     } as IColumn,
+    this._dynamicColumn()
   ];
-
-  // private _DymanicColumns: IColumn[] = [
-  //   this.context.properties.people.forEach(element => [
-  //       {
-  //         key: element.id,
-  //         name: element.name,
-  //         onRender: item => (
-  //           <DropPermissionItem/>
-  //         )
-  //       } as IColumn,
-  //     ])
-  // ];
 
   public render(): JSX.Element {
     // By default, when the list is re-rendered on navigation or some other event,
@@ -87,6 +80,30 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     });
   }
 }
+
+function _DynamicColumns(): IColumn[] {
+  if (this.IPermissionMatrixWebPartProps.people = null){
+    return     {
+      key: 'permissionset',
+      name: 'Permission',
+      minWidth: .1,
+      onRender: item => (
+        <DropPermissionItem/>
+      )
+    } as IColumn,
+  } else {
+    return this.IPermissionMatrixWebPartProps.people.forEach(element => [
+      {
+        key: element.id,
+        name: element.name,
+        minWidth: .1,
+        onRender: item => (
+          <DropPermissionItem/>
+        )
+      } as IColumn,
+    ])
+  }
+  };
 
 function generateItems(parent: string): string[] {
   return Array.prototype.map.call('ABCDEFGHI', (name: string) => parent + 'Folder ' + name);

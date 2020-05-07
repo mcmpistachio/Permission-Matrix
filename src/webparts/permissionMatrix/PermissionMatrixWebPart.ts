@@ -50,22 +50,17 @@ export default class PermissionMatrixWebPart extends BaseClientSideWebPart <IPer
               groupName: 'Select Groups to Grant Permissions',
               groupFields: [
                 PropertyFieldPeoplePicker('people', {
-                  label: '',
+                  label: 'PropertyFieldPeoplePicker',
                   initialData: this.properties.people,
                   allowDuplicate: false,
-                  principalType: [PrincipalType.Security, PrincipalType.Users],
-                  onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
+                  principalType: [PrincipalType.Users, PrincipalType.SharePoint, PrincipalType.Security],
+                  onPropertyChange: this.onPropertyPaneFieldChanged,
                   context: this.context,
-                  properties: this.properties.people,
+                  properties: this.properties,
+                  onGetErrorMessage: null,
                   deferredValidationTime: 0,
-                  key: 'peoplePicker'
+                  key: 'peopleFieldId'
                 })
-              ]
-            },
-            {
-              groupName: 'Select Groups to Grant Permissions',
-              groupFields: [
-                //custom Group Picker
               ]
             }
           ]
