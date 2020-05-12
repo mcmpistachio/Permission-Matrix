@@ -24,10 +24,6 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     key: 0,
   };
 
-  private _dynamicColumn: IColumn[] = [
-
-  ];
-
   private _columns: IColumn[] = [
     {
       key: 'filepath',
@@ -47,12 +43,21 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     {
       key: 'permissionset',
       name: 'Permission',
-      onRender: item => (
-        <DropPermissionItem/>
-      )
+      onRender: item => (<DropPermissionItem/>)
     } as IColumn,
-    this._dynamicColumn()
   ];
+
+  private _addcolumns(_columns:IColumn[]): IColumn[] {
+    for (let user of this.props.people) {
+      _columns.push({
+          key: user.id.toString(),
+          name: user.fullName,
+          onRender: item => (<DropPermissionItem/>)
+        } as IColumn,
+      )
+    }
+    return _columns
+  };
 
   public render(): JSX.Element {
     // By default, when the list is re-rendered on navigation or some other event,
@@ -62,7 +67,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       <DetailsList
         key={this.state.key}
         items={this.state.items}
-        columns={this._columns}
+        columns={this._addcolumns(this._columns)}
         onItemInvoked={this._navigate}
         initialFocusedIndex={this.state.initialFocusedIndex}
         ariaLabelForSelectionColumn="Toggle selection"
@@ -80,30 +85,6 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     });
   }
 }
-
-function _DynamicColumns(): IColumn[] {
-  if (this.IPermissionMatrixWebPartProps.people = null){
-    return     {
-      key: 'permissionset',
-      name: 'Permission',
-      minWidth: .1,
-      onRender: item => (
-        <DropPermissionItem/>
-      )
-    } as IColumn,
-  } else {
-    return this.IPermissionMatrixWebPartProps.people.forEach(element => [
-      {
-        key: element.id,
-        name: element.name,
-        minWidth: .1,
-        onRender: item => (
-          <DropPermissionItem/>
-        )
-      } as IColumn,
-    ])
-  }
-  };
 
 function generateItems(parent: string): string[] {
   return Array.prototype.map.call('ABCDEFGHI', (name: string) => parent + 'Folder ' + name);
