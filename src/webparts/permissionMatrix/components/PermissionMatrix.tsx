@@ -53,7 +53,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
           key: user.id.toString(),
           name: user.fullName,
           onRender: item => (<DropPermissionItem/>)
-        } as IColumn,
+        } as IColumn
       )
     }
     return _columns
