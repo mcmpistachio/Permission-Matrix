@@ -36,11 +36,6 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       ),
     } as IColumn,
     {
-      key: 'size',
-      name: 'Size',
-      onRender: item => '4 KB',
-    } as IColumn,
-    {
       key: 'permissionset',
       name: 'Permission',
       onRender: item => (<DropPermissionItem/>)
@@ -50,8 +45,8 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   private _addcolumns(_columns:IColumn[]): IColumn[] {
     for (let user of this.props.people) {
       _columns.push({
-          key: user.id.toString(),
-          name: user.fullName,
+          key: 'permissionset',
+          name: 'Permission',
           onRender: item => (<DropPermissionItem/>)
         } as IColumn
       )
