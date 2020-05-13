@@ -36,33 +36,41 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       ),
     } as IColumn,
     {
+      key: 'size',
+      name: 'Size',
+      onRender: item => '4 KB',
+    } as IColumn,
+    {
       key: 'permissionset',
       name: 'Permission',
       onRender: item => (<DropPermissionItem/>)
     } as IColumn,
   ];
 
-  private _addcolumns(_columns:IColumn[]): IColumn[] {
+  private _addcolumns(columns: IColumn[]): IColumn[] {
     for (let user of this.props.people) {
-      _columns.push({
+      columns.push({
           key: 'permissionset',
           name: 'Permission',
           onRender: item => (<DropPermissionItem/>)
         } as IColumn
       )
     }
-    return _columns
+    return columns
   };
 
   public render(): JSX.Element {
     // By default, when the list is re-rendered on navigation or some other event,
     // focus goes to the list container and the user has to tab back into the list body.
     // Setting initialFocusedIndex makes focus go directly to a particular item instead.
+    let displayItems: string[] = this.state.items
+    let displayColumns: IColumn[] = this._addcolumns(this._columns)
+
     return (
       <DetailsList
         key={this.state.key}
         items={this.state.items}
-        columns={this._addcolumns(this._columns)}
+        columns={this._columns}
         onItemInvoked={this._navigate}
         initialFocusedIndex={this.state.initialFocusedIndex}
         ariaLabelForSelectionColumn="Toggle selection"
