@@ -54,17 +54,17 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
           name: 'Permission',
           onRender: item => (<DropPermissionItem/>)
         } as IColumn
-      )
+      );
     }
-    return columns
-  };
+    return columns;
+  }
 
   public render(): JSX.Element {
     // By default, when the list is re-rendered on navigation or some other event,
     // focus goes to the list container and the user has to tab back into the list body.
     // Setting initialFocusedIndex makes focus go directly to a particular item instead.
-    let displayItems: string[] = this.state.items
-    let displayColumns: IColumn[] = this._addcolumns(this._columns)
+    let displayItems: string[] = this.state.items;
+    let displayColumns: IColumn[] = this._addcolumns(this._columns);
 
     return (
       <DetailsList
