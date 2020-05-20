@@ -32,8 +32,8 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       minWidth: 90,
       onRender: item => (
         // tslint:disable-next-line:jsx-no-lxambda
-        <Link key={item} onClick={() => this._navigate(item)}>
-          {item}
+        <Link key={item.name} onClick={() => this._navigate(item)}>
+          {item.name}
         </Link>
       ),
     }
@@ -42,11 +42,13 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   private _addcolumns(column: IColumn[]): IColumn[] {
       if (this.props.people == null){
         return column;
-      } else{
-        for (let user of this.props.people) {
+      } else {
+        let _groupPerm: Array<MicrosoftGraph.Permission> = getLibraryUsers();
+
+        for (let user of _groupPerm) {
           column.push({
-              key: 'permissionset',
-              name: 'Permission',
+              key: user.grantedTo.user.id,
+              name: user.grantedTo.user.displayName,
               minWidth: 60,
               onRender: item => (<DropPermissionItem/>),
             }
@@ -57,8 +59,6 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   }
 
   private displayColumns: IColumn[] = this._addcolumns(this._columns);
-
-  private getGroupID: string = this.context;
 
   public render(): JSX.Element {
     // By default, when the list is re-rendered on navigation or some other event,
@@ -99,24 +99,59 @@ function getLibraryItems(parent:string): any {
   this.context.msGraphClientFactory
   .getClient()
   .then((client: MSGraphClient): void => {
-    client
-      .api("/groups/"+this.props.group+"/drive/items/"+parent+"/children")
-      .get((error, response: MicrosoftGraph.DriveItem[], rawResponse?: any) => {
-        // handle the response
-        if(error){
-          return generateItems('');
-        } else if (response){
-            var file: Array<MicrosoftGraph.DriveItem> = new Array<MicrosoftGraph.DriveItem>();
 
-            response.map((item:MicrosoftGraph.DriveItem) => {
+    let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+parent+'/children';
+
+    client
+      .api(apiUrl)
+      .version("v1.0")
+      .select('id,name')
+      .get((err, res) => {
+        // handle the response
+        if(err){
+          return generateItems('');
+        }
+
+          let file: Array<MicrosoftGraph.DriveItem> = new Array<MicrosoftGraph.DriveItem>();
+
+            res.value.map((item:any) => {
               file.push({
                 id: item.id,
-                name: item.name,
-                children: item.children
+                name: item.name
               });
             });
           return file;
         }
-    });
+    );
+  });
+}
+
+function getLibraryUsers (): any {
+  this.context.msGraphClientFactory
+  .getClient()
+  .then((client: MSGraphClient): void => {
+
+    let apiUrl: string = '/groups/'+this.props.group+'/drive/items/root/permissions';
+
+    client
+      .api(apiUrl)
+      .version("v1.0")
+      .get((err, res) => {
+        // handle the response
+        if(err){
+          console.error(err);
+          return;
+        }
+
+          let perm: Array<MicrosoftGraph.Permission> = new Array<MicrosoftGraph.Permission>();
+
+            res.value.map((item:any) => {
+              perm.push({
+                grantedTo: item.grantedTo.user
+              });
+            });
+          return res;
+        }
+    );
   });
 }
