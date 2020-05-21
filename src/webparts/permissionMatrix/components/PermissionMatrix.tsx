@@ -17,6 +17,14 @@ export interface IDetailsListNavigatingFocusExampleState {
   parentFile: string;
   key: number;
 }
+export interface permUser {
+  displayName: string;
+  objectID: string;
+}
+export interface FileItm {
+  displayName: string;
+  objectID: string;
+}
 
 export default class PermissionMatrix extends React.Component<IPermissionMatrixWebPartProps, {}> {
   public state: IDetailsListNavigatingFocusExampleState = {
@@ -32,10 +40,16 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       minWidth: 90,
       onRender: item => (
         // tslint:disable-next-line:jsx-no-lxambda
-        <Link key={item.name} onClick={() => this._navigate(item)}>
-          {item.name}
+        <Link key={item} onClick={() => this._navigate(item)}>
+          {item}
         </Link>
       ),
+    },
+    {
+      key: 'permission',
+      name: 'permission',
+      minWidth: 60,
+      onRender: item => (<DropPermissionItem/>),
     }
   ];
 
@@ -43,12 +57,12 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       if (this.props.people == null){
         return column;
       } else {
-        let _groupPerm: Array<MicrosoftGraph.Permission> = getLibraryUsers();
+        let _groupPerm: Array<permUser> = getLibraryUsers();
 
-        for (let user of _groupPerm) {
+        for (let user of this.props.people) {
           column.push({
-              key: user.grantedTo.user.id,
-              name: user.grantedTo.user.displayName,
+              key: 'permission',
+              name: 'permission',
               minWidth: 60,
               onRender: item => (<DropPermissionItem/>),
             }
@@ -60,25 +74,22 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
 
   private displayColumns: IColumn[] = this._addcolumns(this._columns);
 
-  public render(): JSX.Element {
+    public render(): JSX.Element {
     // By default, when the list is re-rendered on navigation or some other event,
     // focus goes to the list container and the user has to tab back into the list body.
     // Setting initialFocusedIndex makes focus go directly to a particular item instead.
 
     return (
-      <div>
-        <Label>{escape(this.props.group)}</Label>
-        <DetailsList
-          key={this.state.key}
-          items={getLibraryItems(this.state.parentFile)}
-          columns={this.displayColumns}
-          onItemInvoked={this._navigate}
-          initialFocusedIndex={this.state.initialFocusedIndex}
-          ariaLabelForSelectionColumn="Toggle selection"
-          ariaLabelForSelectAllCheckbox="Toggle selection for all items"
-          checkButtonAriaLabel="Row checkbox"
-        />
-      </div>
+      <DetailsList
+        key={this.state.key}
+        items={this.state.items}
+        columns={this.displayColumns}
+        onItemInvoked={this._navigate}
+        initialFocusedIndex={this.state.initialFocusedIndex}
+        ariaLabelForSelectionColumn="Toggle selection"
+        ariaLabelForSelectAllCheckbox="Toggle selection for all items"
+        checkButtonAriaLabel="Row checkbox"
+      />
     );
   }
 
@@ -95,32 +106,33 @@ function generateItems(parent: string): string[] {
   return Array.prototype.map.call('ABCDEFGHI', (name: string) => parent + 'Folder ' + name);
 }
 
-function getLibraryItems(parent:string): any {
+function getLibraryItems(): any {
   this.context.msGraphClientFactory
   .getClient()
   .then((client: MSGraphClient): void => {
 
-    let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+parent+'/children';
+    let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+this.state.parentFile+'/children';
 
     client
       .api(apiUrl)
       .version("v1.0")
       .select('id,name')
-      .get((err, res) => {
+      .get((err, res: any) => {
         // handle the response
         if(err){
-          return generateItems('');
+          console.error(err);
+          return err;
         }
 
-          let file: Array<MicrosoftGraph.DriveItem> = new Array<MicrosoftGraph.DriveItem>();
+          let file: Array<FileItm> = new Array<FileItm>();
 
-            res.value.map((item:any) => {
+            res.value.map((item:MicrosoftGraph.DriveItem) => {
               file.push({
-                id: item.id,
-                name: item.name
+                displayName: item.name,
+                objectID: item.id
               });
             });
-          return file;
+          this.setState({fileList: file});
         }
     );
   });
@@ -136,21 +148,22 @@ function getLibraryUsers (): any {
     client
       .api(apiUrl)
       .version("v1.0")
-      .get((err, res) => {
+      .get((err, res: any) => {
         // handle the response
         if(err){
           console.error(err);
-          return;
+          return err;
         }
 
-          let perm: Array<MicrosoftGraph.Permission> = new Array<MicrosoftGraph.Permission>();
+          let perm: Array<permUser> = new Array<permUser>();
 
-            res.value.map((item:any) => {
+            res.value.map((item:MicrosoftGraph.Permission) => {
               perm.push({
-                grantedTo: item.grantedTo.user
+                displayName: item.grantedTo.user.displayName,
+                objectID: item.grantedTo.user.id
               });
             });
-          return res;
+          this.setState({userColumn: perm});
         }
     );
   });
