@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
 import { IPropertyPaneConfiguration, PropertyPaneDynamicField, PropertyPaneTextField } from '@microsoft/sp-property-pane';
-import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
+import { BaseClientSideWebPart, WebPartContext } from '@microsoft/sp-webpart-base';
 import { PropertyFieldPeoplePicker, PrincipalType } from '@pnp/spfx-property-controls/lib/PropertyFieldPeoplePicker';
 import * as strings from 'PermissionMatrixWebPartStrings';
 import PermissionMatrix from './components/PermissionMatrix';
@@ -14,6 +14,7 @@ export interface IPermissionMatrixWebPartProps {
   description: string;
   people: IPropertyFieldGroupOrPerson[];
   group: string;
+  context: WebPartContext;
 }
 
 export default class PermissionMatrixWebPart extends BaseClientSideWebPart <IPermissionMatrixProps> {
@@ -24,7 +25,8 @@ export default class PermissionMatrixWebPart extends BaseClientSideWebPart <IPer
       {
         description: this.properties.description,
         people: this.properties.people,
-        group: this.context.pageContext.site.group.id
+        group: this.context.pageContext.site.group.id,
+        context: this.context
       }
     );
 

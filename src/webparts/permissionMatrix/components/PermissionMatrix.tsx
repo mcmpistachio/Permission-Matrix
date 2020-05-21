@@ -9,19 +9,20 @@ import { Link } from 'office-ui-fabric-react/lib/Link';
 import * as MicrosoftGraph from '@microsoft/microsoft-graph-types';
 import { MSGraphClient } from '@microsoft/sp-http';
 import {SPHttpClient, SPHttpClientResponse} from '@microsoft/sp-http';
-import { getItemStyles } from 'office-ui-fabric-react/lib/components/ContextualMenu/ContextualMenu.classNames';
 
 export interface IDetailsListNavigatingFocusExampleState {
   items: string[];
   initialFocusedIndex?: number;
   parentFile: string;
   key: number;
+  fileItems?: FileItem[];
+  userColumn?: permUser[];
 }
 export interface permUser {
   displayName: string;
   objectID: string;
 }
-export interface FileItm {
+export interface FileItem {
   displayName: string;
   objectID: string;
 }
@@ -33,9 +34,70 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     key: 0,
   };
 
+  private _loadGroups(): any {
+    this.props.context.msGraphClientFactory
+    .getClient()
+    .then((client: MSGraphClient): void => {
+
+      let apiUrl: string = '/groups/'+this.props.group+'/drive/items/root/permissions';
+
+      client
+        .api(apiUrl)
+        .version("v1.0")
+        .get((err, res: any) => {
+          // handle the response
+          if(err){
+            console.error(err);
+            return err;
+          }
+
+            let perm: Array<permUser> = new Array<permUser>();
+
+              res.value.map((item:MicrosoftGraph.Permission) => {
+                perm.push({
+                  displayName: item.grantedTo.user.displayName,
+                  objectID: item.grantedTo.user.id
+                });
+              });
+            this.setState({userColumn: perm});
+          }
+      );
+    });
+  }
+
+  private _loadFiles(): any {
+    this.props.context.msGraphClientFactory.getClient()
+    .then((client: MSGraphClient): void => {
+
+      let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+this.state.parentFile+'/children';
+
+      client
+        .api(apiUrl)
+        .version("v1.0")
+        .get((err, res) => {
+          // handle the response
+          if(err){
+            console.error(err);
+            return err;
+          }
+
+            let file: Array<FileItem> = new Array<FileItem>();
+
+              res.value.map((item:MicrosoftGraph.DriveItem) => {
+                file.push({
+                  displayName: item.name,
+                  objectID: item.id
+                });
+              });
+              this.setState({fileItems: file});
+          }
+      );
+    });
+  }
+
   private _columns: IColumn[] = [
     {
-      key: 'name',
+      key: 'file',
       name: 'File',
       minWidth: 90,
       onRender: item => (
@@ -57,12 +119,11 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       if (this.props.people == null){
         return column;
       } else {
-        let _groupPerm: Array<permUser> = getLibraryUsers();
 
         for (let user of this.props.people) {
           column.push({
               key: 'permission',
-              name: 'permission',
+              name: user.fullName,
               minWidth: 60,
               onRender: item => (<DropPermissionItem/>),
             }
@@ -102,69 +163,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   }
 }
 
+
 function generateItems(parent: string): string[] {
   return Array.prototype.map.call('ABCDEFGHI', (name: string) => parent + 'Folder ' + name);
-}
-
-function getLibraryItems(): any {
-  this.context.msGraphClientFactory
-  .getClient()
-  .then((client: MSGraphClient): void => {
-
-    let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+this.state.parentFile+'/children';
-
-    client
-      .api(apiUrl)
-      .version("v1.0")
-      .select('id,name')
-      .get((err, res: any) => {
-        // handle the response
-        if(err){
-          console.error(err);
-          return err;
-        }
-
-          let file: Array<FileItm> = new Array<FileItm>();
-
-            res.value.map((item:MicrosoftGraph.DriveItem) => {
-              file.push({
-                displayName: item.name,
-                objectID: item.id
-              });
-            });
-          this.setState({fileList: file});
-        }
-    );
-  });
-}
-
-function getLibraryUsers (): any {
-  this.context.msGraphClientFactory
-  .getClient()
-  .then((client: MSGraphClient): void => {
-
-    let apiUrl: string = '/groups/'+this.props.group+'/drive/items/root/permissions';
-
-    client
-      .api(apiUrl)
-      .version("v1.0")
-      .get((err, res: any) => {
-        // handle the response
-        if(err){
-          console.error(err);
-          return err;
-        }
-
-          let perm: Array<permUser> = new Array<permUser>();
-
-            res.value.map((item:MicrosoftGraph.Permission) => {
-              perm.push({
-                displayName: item.grantedTo.user.displayName,
-                objectID: item.grantedTo.user.id
-              });
-            });
-          this.setState({userColumn: perm});
-        }
-    );
-  });
 }
