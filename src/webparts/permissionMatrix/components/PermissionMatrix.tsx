@@ -51,15 +51,15 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
             return err;
           }
 
-            let perm: Array<permUser> = new Array<permUser>();
+            let group: Array<permUser> = new Array<permUser>();
 
               res.value.map((item:MicrosoftGraph.Permission) => {
-                perm.push({
+                group.push({
                   displayName: item.grantedTo.user.displayName,
                   objectID: item.grantedTo.user.id
                 });
               });
-            this.setState({userColumn: perm});
+            this.setState({userColumn: group});
           }
       );
     });
@@ -135,6 +135,10 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
 
   private displayColumns: IColumn[] = this._addcolumns(this._columns);
 
+    public componentDidMount(): void{
+      this._loadGroups();
+      this._loadFiles();
+    }
     public render(): JSX.Element {
     // By default, when the list is re-rendered on navigation or some other event,
     // focus goes to the list container and the user has to tab back into the list body.
