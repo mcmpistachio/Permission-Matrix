@@ -18,13 +18,9 @@ export interface IDetailsListNavigatingFocusExampleState {
   fileItems?: MicrosoftGraph.DriveItem[];
   userColumn?: MicrosoftGraph.Permission[];
 }
-export interface permUser {
+export interface defColumn {
+  id: string;
   displayName: string;
-  objectID: string;
-}
-export interface FileItem {
-  displayName: string;
-  objectID: string;
 }
 
 export default class PermissionMatrix extends React.Component<IPermissionMatrixWebPartProps, {}> {
@@ -34,69 +30,32 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     key: 0,
   };
 
-  private _loadFiles(): any {
-    this.props.context.msGraphClientFactory.getClient()
-    .then((client: MSGraphClient): any => {
-
-      let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+this.state.parentFile+'/children';
-
-      client
-        .api(apiUrl, )
-        .version("v1.0")
-        .get((err, res: MicrosoftGraph.DriveItem) => {
-          // handle the response
-          if(err){
-            console.error(err);
-            return err;
-          } else{
-            return res;
-            // let file: FileItem[] = new Array<FileItem>();
-
-            //   res.value.map((item:MicrosoftGraph.DriveItem) => {
-            //     file.push({
-            //       displayName: item.name,
-            //       objectID: item.id
-            //     });
-            //   });
-            //   this.setState({fileItems: file});
-          }}
-      );
-    });
-  }
-
   private _columns: IColumn[] = [
     {
       key: 'file',
-      name: 'File',
-      minWidth: 90,
-      // fieldName: 'displayName',
+      name: "File",
+      minWidth: 10,
       onRender: item => (
         // tslint:disable-next-line:jsx-no-lxambda
         <Link key={item} onClick={() => this._navigate(item)}>
           {item}
         </Link>
       ),
-    },
-    {
-      key: 'permission',
-      name: 'permission',
-      minWidth: 60,
-      onRender: item => (<DropPermissionItem/>),
     }
   ];
 
   private _addcolumns(column: IColumn[]): IColumn[] {
-      // if (this.props.people == null){
-      //   return column;
-      // } else
+    if (this.state.userColumn == null){
+        // return column;
+        this._loadUser();
+      } else
       {
-        let _userColumns: MicrosoftGraph.Permission[] = _loadPermissions();
-        for (let col of _userColumns) {
+        for (let col of this.state.userColumn) {
           column.push({
-              key: col.grantedTo.user.id,
+              key: col.id,
               name: col.grantedTo.user.displayName,
-              minWidth: 60,
-              onRender: item => (<DropPermissionItem/>),
+              minWidth: 10,
+              onRender: item => <DropPermissionItem/>,
             }
           );
         }
@@ -106,11 +65,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
 
   private displayColumns: IColumn[] = this._addcolumns(this._columns);
 
-    // public componentDidMount(): void {
-    //   this._loadGroups();
-    //   this._loadFiles();
-    // }
-    public render(): JSX.Element {
+  public render(): JSX.Element {
     // By default, when the list is re-rendered on navigation or some other event,
     // focus goes to the list container and the user has to tab back into the list body.
     // Setting initialFocusedIndex makes focus go directly to a particular item instead.
@@ -136,32 +91,48 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       key: this.state.key + 1,
     });
   }
+  private _loadUser(): void {
+    this.props.context.msGraphClientFactory
+    .getClient()
+    .then((client: MSGraphClient): void => {
+      let apiUrl: string = '/groups/'+this.props.group+'/drive/items/root/permissions';
+      client
+        .api(apiUrl)
+        .version('v1.0')
+        .get((error, result: MicrosoftGraph.Permission[]) => {
+          // handle the response
+          if(error){
+            console.error(error);
+          } else {
+            // result.forEach(element => {
+
+            // });
+            this.setState({userColumn: result});
+          }}
+      );
+    });
+  }
+  private _loadFiles(): void {
+    let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+this.state.parentFile+'/children';
+    this.props.context.msGraphClientFactory
+    .getClient()
+    .then((client: MSGraphClient): void => {
+      client
+        .api(apiUrl, )
+        .version("v1.0")
+        .get((error, response: MicrosoftGraph.DriveItem) => {
+          // handle the response
+          if(error){
+            console.error(error);
+          } else {
+            this.setState({fileItems: response});
+          }}
+      );
+    });
+  }
 }
 
 
 function generateItems(parent: string): string[] {
   return Array.prototype.map.call('ABCDEFGHI', (name: string) => parent + 'Folder ' + name);
-}
-
-function _loadPermissions(): MicrosoftGraph.Permission[] {
-  return this.properties.context.msGraphClientFactory
-    .getClient()
-    .then((client: MSGraphClient): any => {
-
-      let apiUrl: string = '/groups/'+this.properties.group+'/drive/items/root/permissions';
-
-      client
-        .api(apiUrl)
-        .version('v.1.0')
-        .header.bind('Access-Control-Allow-Origin','*')
-        .get((error, result: MicrosoftGraph.Permission) => {
-          // handle the response
-          if(error){
-            return error;
-            console.error(error);
-          } else {
-            return result;
-          }}
-      );
-    });
 }
