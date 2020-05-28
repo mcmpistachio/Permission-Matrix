@@ -3,7 +3,7 @@
   "solution": {
     "name": "permission-matrix-client-side-solution",
     "id": "5b5f27f4-2292-4595-8eb5-d676f4c9e170",
-    "version": "0.0.3.0",
+    "version": "0.0.5.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": true,

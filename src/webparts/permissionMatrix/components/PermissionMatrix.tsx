@@ -9,6 +9,7 @@ import { Link } from 'office-ui-fabric-react/lib/Link';
 import * as MicrosoftGraph from '@microsoft/microsoft-graph-types';
 import { MSGraphClient } from '@microsoft/sp-http';
 import {SPHttpClient, SPHttpClientResponse} from '@microsoft/sp-http';
+import { concatStyleSets } from 'office-ui-fabric-react/lib/Styling';
 
 export interface IDetailsListNavigatingFocusExampleState {
   items: string[];
@@ -17,10 +18,6 @@ export interface IDetailsListNavigatingFocusExampleState {
   key: number;
   fileItems?: MicrosoftGraph.DriveItem[];
   userColumn?: MicrosoftGraph.Permission[];
-}
-export interface defColumn {
-  id: string;
-  displayName: string;
 }
 
 export default class PermissionMatrix extends React.Component<IPermissionMatrixWebPartProps, {}> {
@@ -34,28 +31,34 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     {
       key: 'file',
       name: "File",
-      minWidth: 10,
+      minWidth: 60,
       onRender: item => (
         // tslint:disable-next-line:jsx-no-lxambda
         <Link key={item} onClick={() => this._navigate(item)}>
           {item}
         </Link>
-      ),
+      )
+    },
+    {
+      key: 'permission',
+      name: "permission",
+      minWidth: 60,
+      onRender: item => (<DropPermissionItem/>),
     }
   ];
 
   private _addcolumns(column: IColumn[]): IColumn[] {
-    if (this.state.userColumn == null){
-        // return column;
-        this._loadUser();
+    let _loadColumn = this._loadUser();
+    if (_loadColumn == null){
+        return column;
       } else
       {
-        for (let col of this.state.userColumn) {
+        for (let col of _loadColumn) {
           column.push({
-              key: col.id,
-              name: col.grantedTo.user.displayName,
-              minWidth: 10,
-              onRender: item => <DropPermissionItem/>,
+              key: 'permission',
+              name: 'Permission',
+              minWidth: 60,
+              onRender: item => (<DropPermissionItem/>),
             }
           );
         }
@@ -71,7 +74,8 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     // Setting initialFocusedIndex makes focus go directly to a particular item instead.
 
     return (
-      <DetailsList
+      <div>
+        <DetailsList
         key={this.state.key}
         items={this.state.items}
         columns={this.displayColumns}
@@ -81,6 +85,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
         ariaLabelForSelectAllCheckbox="Toggle selection for all items"
         checkButtonAriaLabel="Row checkbox"
       />
+      </div>
     );
   }
 
@@ -91,44 +96,62 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       key: this.state.key + 1,
     });
   }
-  private _loadUser(): void {
+
+  private _loadUser(): MicrosoftGraph.Permission[] {
+    var response: MicrosoftGraph.Permission[];
     this.props.context.msGraphClientFactory
     .getClient()
     .then((client: MSGraphClient): void => {
       let apiUrl: string = '/groups/'+this.props.group+'/drive/items/root/permissions';
       client
         .api(apiUrl)
-        .version('v1.0')
-        .get((error, result: MicrosoftGraph.Permission[]) => {
+        .version("v1.0")
+        .get((error?, result?: MicrosoftGraph.Permission[], rawResponse?: any) => {
           // handle the response
           if(error){
             console.error(error);
-          } else {
-            // result.forEach(element => {
-
+          }
+          if (result) {
+            console.log("Reached the Graph");
+            // for (let res of result){
+            //   response.push(res);
+            //   console.log(res.grantedTo.user.displayName);
+            // }
+            result.forEach(element => {
+              response.push(element);
+              console.log(element.grantedTo.user.displayName);
+            });
+            // this.setState({userColumn:result});
+            // result.forEach(res => {
+            //   response.push(res);
             // });
-            this.setState({userColumn: result});
-          }}
+          }
+        }
       );
     });
+    return response;
   }
-  private _loadFiles(): void {
-    let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+this.state.parentFile+'/children';
+
+  private _loadFiles(): MicrosoftGraph.DriveItem[] {
+    let driveFile: MicrosoftGraph.DriveItem[];
     this.props.context.msGraphClientFactory
     .getClient()
-    .then((client: MSGraphClient): void => {
+    .then((client: MSGraphClient): any => {
+      let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+this.state.parentFile+'/children';
       client
-        .api(apiUrl, )
+        .api(apiUrl)
         .version("v1.0")
-        .get((error, response: MicrosoftGraph.DriveItem) => {
+        .get((err, res: MicrosoftGraph.DriveItem[]) => {
           // handle the response
-          if(error){
-            console.error(error);
+          if(err){
+            console.error(err);
           } else {
-            this.setState({fileItems: response});
-          }}
+            return res;
+          }
+        }
       );
     });
+    return driveFile;
   }
 }
 
