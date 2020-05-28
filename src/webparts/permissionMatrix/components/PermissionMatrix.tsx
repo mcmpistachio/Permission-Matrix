@@ -38,21 +38,21 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
           {item}
         </Link>
       )
-    },
-    {
-      key: 'permission',
-      name: "permission",
-      minWidth: 60,
-      onRender: item => (<DropPermissionItem/>),
     }
   ];
 
   private _addcolumns(column: IColumn[]): IColumn[] {
     let _loadColumn = this._loadUser();
     if (_loadColumn == null){
+        column.push({
+          key: 'permission',
+          name: 'Permission',
+          minWidth: 60,
+          onRender: item => (<DropPermissionItem/>),
+          }
+        );
         return column;
-      } else
-      {
+      } else {
         for (let col of _loadColumn) {
           column.push({
               key: 'permission',
@@ -98,7 +98,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   }
 
   private _loadUser(): MicrosoftGraph.Permission[] {
-    var response: MicrosoftGraph.Permission[];
+    let response: MicrosoftGraph.Permission[];
     this.props.context.msGraphClientFactory
     .getClient()
     .then((client: MSGraphClient): void => {
@@ -113,17 +113,14 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
           }
           if (result) {
             console.log("Reached the Graph");
-            // for (let res of result){
-            //   response.push(res);
-            //   console.log(res.grantedTo.user.displayName);
-            // }
-            result.forEach(element => {
-              response.push(element);
-              console.log(element.grantedTo.user.displayName);
-            });
-            // this.setState({userColumn:result});
-            // result.forEach(res => {
-            //   response.push(res);
+            this.setState({userColumn:result});
+            for (let res of result){
+              console.log(res.grantedTo.user.displayName);
+              response.push(res);
+            }
+            // result.forEach(element => {
+            //   console.log(element.grantedTo.user.displayName);
+            //   response.push(element);
             // });
           }
         }
