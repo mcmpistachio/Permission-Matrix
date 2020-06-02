@@ -9,7 +9,7 @@ import { Link } from 'office-ui-fabric-react/lib/Link';
 import * as MicrosoftGraph from '@microsoft/microsoft-graph-types';
 import { MSGraphClient } from '@microsoft/sp-http';
 import {SPHttpClient, SPHttpClientResponse} from '@microsoft/sp-http';
-import { concatStyleSets } from 'office-ui-fabric-react/lib/Styling';
+import { concatStyleSets, ThemeSettingName } from 'office-ui-fabric-react/lib/Styling';
 
 export interface IDetailsListNavigatingFocusExampleState {
   items: string[];
@@ -42,7 +42,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   ];
 
   private _addcolumns(column: IColumn[]): IColumn[] {
-    let _loadColumn = this._loadUser();
+    let _loadColumn: MicrosoftGraph.Permission[] = this._loadUser();
     if (_loadColumn == null){
         column.push({
           key: 'permission',
@@ -53,15 +53,14 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
         );
         return column;
       } else {
-        for (let col of _loadColumn) {
+        _loadColumn.forEach(element =>{
           column.push({
-              key: 'permission',
-              name: 'Permission',
-              minWidth: 60,
-              onRender: item => (<DropPermissionItem/>),
-            }
-          );
-        }
+            key: 'permission',
+            name: element.grantedTo.user.displayName,
+            minWidth: 60,
+            onRender: item => (<DropPermissionItem/>),
+        });
+        });
         return column;
       }
   }
@@ -101,27 +100,22 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     let response: MicrosoftGraph.Permission[];
     this.props.context.msGraphClientFactory
     .getClient()
-    .then((client: MSGraphClient): void => {
+    .then((client: MSGraphClient):any => {
       let apiUrl: string = '/groups/'+this.props.group+'/drive/items/root/permissions';
       client
         .api(apiUrl)
         .version("v1.0")
-        .get((error?, result?: MicrosoftGraph.Permission[], rawResponse?: any) => {
+        .get((error?, result?: any, rawResponse?: any):any => {
           // handle the response
           if(error){
             console.error(error);
           }
           if (result) {
             console.log("Reached the Graph");
-            this.setState({userColumn:result});
-            for (let res of result){
-              console.log(res.grantedTo.user.displayName);
-              response.push(res);
-            }
-            // result.forEach(element => {
-            //   console.log(element.grantedTo.user.displayName);
-            //   response.push(element);
-            // });
+            console.log(result.value.length);
+            result.value.forEach(element =>{
+              console.log(element.grantedTo.user.displayName);
+            });
           }
         }
       );
