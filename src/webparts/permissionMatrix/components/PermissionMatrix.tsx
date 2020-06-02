@@ -122,6 +122,37 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     });
     return response;
   }
+  private _apiUser():MicrosoftGraph.Permission[] {
+    let apiUser = new Promise<any>((resolve, reject)=>{
+      this.props.context.msGraphClientFactory
+      .getClient()
+      .then((client: MSGraphClient):any => {
+        let apiUrl: string = '/groups/'+this.props.group+'/drive/items/root/permissions';
+        client
+          .api(apiUrl)
+          .version("v1.0")
+          .get((error?, result?: any, rawResponse?: any):any => {
+            // handle the response
+            if(error){
+              console.error(error);
+            }
+            if (result) {
+              resolve(result)
+            }
+          }
+        );
+      });
+    })
+    var _mappedUser: MicrosoftGraph.Permission[];
+    apiUser.value.map((item: any)=>{
+      _mappedUser.push({
+        id: item.id,
+        roles: item.roles,
+        grantedTo: item.grantedTo
+      })
+    })
+    return ;
+  }
 
   private _loadFiles(): MicrosoftGraph.DriveItem[] {
     let driveFile: MicrosoftGraph.DriveItem[];
