@@ -42,8 +42,8 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   ];
 
   private _addcolumns(column: IColumn[]): IColumn[] {
-    let _loadColumn: MicrosoftGraph.Permission[] = this._loadUser();
-    if (_loadColumn == null){
+    this._loadUser2();
+    if (this.state.userColumn == null){
         column.push({
           key: 'permission',
           name: 'Permission',
@@ -53,7 +53,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
         );
         return column;
       } else {
-        _loadColumn.forEach(element =>{
+        this.state.userColumn.forEach(element =>{
           column.push({
             key: 'permission',
             name: element.grantedTo.user.displayName,
@@ -95,7 +95,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       key: this.state.key + 1,
     });
   }
-
+//Loading the users and passing back the MicrosoftGraph.Permission[]
   private _loadUser(): MicrosoftGraph.Permission[] {
     let response: MicrosoftGraph.Permission[];
     this.props.context.msGraphClientFactory
@@ -107,6 +107,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
         .version("v1.0")
         .get((error?, result?: any, rawResponse?: any):any => {
           // handle the response
+          let apiResponse: MicrosoftGraph.Permission[];
           if(error){
             console.error(error);
           }
@@ -115,16 +116,56 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
             console.log(result.value.length);
             result.value.forEach(element =>{
               console.log(element.grantedTo.user.displayName);
+              apiResponse.push(element);
             });
+            return result.value;
           }
         }
       );
     });
     return response;
   }
-  private _apiUser():MicrosoftGraph.Permission[] {
-    let apiUser = new Promise<any>((resolve, reject)=>{
-      this.props.context.msGraphClientFactory
+  private_loadUser1(): MicrosoftGraph.Permission[]{
+    return this._apiUser().then(element =>{
+      let response: MicrosoftGraph.Permission[];
+      element.map({
+
+      })
+    })
+  }
+  //setting the State to the API Call results
+  private _loadUser2(): void {
+
+    this.props.context.msGraphClientFactory
+    .getClient()
+    .then((client: MSGraphClient) => {
+      let apiUrl: string = '/groups/'+this.props.group+'/drive/items/root/permissions';
+      client
+        .api(apiUrl)
+        .version("v1.0")
+        .get((error?, result?: any, rawResponse?: any) => {
+          // handle the response
+          let response: MicrosoftGraph.Permission[];
+          if(error){
+            console.error(error);
+          }
+          if (result) {
+            console.log("Reached the Graph");
+            console.log(result.value.length);
+            result.value.forEach(element =>{
+              console.log(element.grantedTo.user.displayName);
+              response.push(element);
+            });
+            this.setState({userColumn:response});
+          }
+        }
+      );
+    });
+  }
+  //Promising the API result
+  private _apiUser(): any {
+    return new Promise<any>((resolve, reject)=>{
+    this.props.context.msGraphClientFactory
       .getClient()
       .then((client: MSGraphClient):any => {
         let apiUrl: string = '/groups/'+this.props.group+'/drive/items/root/permissions';
@@ -137,21 +178,12 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
               console.error(error);
             }
             if (result) {
-              resolve(result)
+              resolve(result.value)
             }
           }
         );
       });
     })
-    var _mappedUser: MicrosoftGraph.Permission[];
-    apiUser.value.map((item: any)=>{
-      _mappedUser.push({
-        id: item.id,
-        roles: item.roles,
-        grantedTo: item.grantedTo
-      })
-    })
-    return ;
   }
 
   private _loadFiles(): MicrosoftGraph.DriveItem[] {
