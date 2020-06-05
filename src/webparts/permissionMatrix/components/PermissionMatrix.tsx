@@ -42,8 +42,9 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   ];
 
   private _addcolumns(column: IColumn[]): IColumn[] {
-    this._loadUser2();
-    if (this.state.userColumn == null){
+    return this._apiUser().then(element => {
+      // console.log(element.length);
+      if (element == null){
         column.push({
           key: 'permission',
           name: 'Permission',
@@ -53,16 +54,38 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
         );
         return column;
       } else {
-        this.state.userColumn.forEach(element =>{
+        for (let each of element){
           column.push({
             key: 'permission',
-            name: element.grantedTo.user.displayName,
+            name: 'Permission',
             minWidth: 60,
             onRender: item => (<DropPermissionItem/>),
-        });
-        });
+          });
+        }
         return column;
       }
+    });
+    // console.log(apiColumn.length);
+    // if (apiColumn == null){
+    //     column.push({
+    //       key: 'permission',
+    //       name: 'Permission',
+    //       minWidth: 60,
+    //       onRender: item => (<DropPermissionItem/>),
+    //       }
+    //     );
+    //     return column;
+    //   } else {
+    //     for (let each of apiColumn){
+    //       column.push({
+    //         key: 'permission',
+    //         name: 'Permission',
+    //         minWidth: 60,
+    //         onRender: item => (<DropPermissionItem/>),
+    //       });
+    //     }
+    //     return column;
+    //   }
   }
 
   private displayColumns: IColumn[] = this._addcolumns(this._columns);
@@ -125,16 +148,9 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     });
     return response;
   }
-  private_loadUser1(): MicrosoftGraph.Permission[]{
-    return this._apiUser().then(element =>{
-      let response: MicrosoftGraph.Permission[];
-      element.map({
 
-      })
-    })
-  }
   //setting the State to the API Call results
-  private _loadUser2(): void {
+  private _loadUser1(): void {
 
     this.props.context.msGraphClientFactory
     .getClient()
@@ -152,8 +168,10 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
           if (result) {
             console.log("Reached the Graph");
             console.log(result.value.length);
+            for (let u of result.value){
+              console.log(u.grantedTo.user.displayName);
+            }
             result.value.forEach(element =>{
-              console.log(element.grantedTo.user.displayName);
               response.push(element);
             });
             this.setState({userColumn:response});
@@ -162,6 +180,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       );
     });
   }
+
   //Promising the API result
   private _apiUser(): any {
     return new Promise<any>((resolve, reject)=>{
@@ -178,12 +197,17 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
               console.error(error);
             }
             if (result) {
-              resolve(result.value)
+              resolve(result.value);
+              console.log("Reached the Graph");
+              console.log(result.value.length);
+              for (let u of result.value){
+                console.log(u.grantedTo.user.displayName);
+              }
             }
           }
         );
       });
-    })
+    });
   }
 
   private _loadFiles(): MicrosoftGraph.DriveItem[] {
