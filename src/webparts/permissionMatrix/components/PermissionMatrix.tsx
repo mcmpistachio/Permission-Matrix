@@ -16,8 +16,8 @@ export interface IDetailsListNavigatingFocusExampleState {
   initialFocusedIndex?: number;
   parentFile: string;
   key: number;
-  fileItems?: MicrosoftGraph.DriveItem[];
-  userColumn?: MicrosoftGraph.Permission[];
+  apiColumn?: IColumn[];
+  apiFiles?: MicrosoftGraph.DriveItem[];
 }
 
 export default class PermissionMatrix extends React.Component<IPermissionMatrixWebPartProps, {}> {
@@ -32,18 +32,14 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       key: 'file',
       name: "File",
       minWidth: 60,
-      onRender: item => (
-        // tslint:disable-next-line:jsx-no-lxambda
-        <Link key={item} onClick={() => this._navigate(item)}>
-          {item}
-        </Link>
-      )
+      fieldName: 'name'
     }
   ];
 
-  private _addcolumns(column: IColumn[]): IColumn[] {
-    return this._apiUser().then(element => {
+  private _addcolumns(column: IColumn[]): void {
+    this._apiUser().then(element => {
       // console.log(element.length);
+      // console.log(element);
       if (element == null){
         column.push({
           key: 'permission',
@@ -52,43 +48,41 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
           onRender: item => (<DropPermissionItem/>),
           }
         );
-        return column;
+        this.setState({dispColumn:column});
       } else {
         for (let each of element){
           column.push({
-            key: 'permission',
-            name: 'Permission',
+            key: each.grantedTo.user.id,
+            name: each.grantedTo.user.displayName,
             minWidth: 60,
             onRender: item => (<DropPermissionItem/>),
           });
         }
-        return column;
+        this.setState({apiColumn:column});
       }
     });
-    // console.log(apiColumn.length);
-    // if (apiColumn == null){
-    //     column.push({
-    //       key: 'permission',
-    //       name: 'Permission',
-    //       minWidth: 60,
-    //       onRender: item => (<DropPermissionItem/>),
-    //       }
-    //     );
-    //     return column;
-    //   } else {
-    //     for (let each of apiColumn){
-    //       column.push({
-    //         key: 'permission',
-    //         name: 'Permission',
-    //         minWidth: 60,
-    //         onRender: item => (<DropPermissionItem/>),
-    //       });
-    //     }
-    //     return column;
-    //   }
   }
 
-  private displayColumns: IColumn[] = this._addcolumns(this._columns);
+  //Need to finish!!! Handle the API push to state
+  private _getFiles():void {
+    this._apiFiles().then(element =>{
+      console.log(element);
+      if (element == null) {
+        //what to do?
+      } else {
+        let file:MicrosoftGraph.DriveItem[];
+        for (let each of element){
+          file.push(each);
+        }
+        this.setState({apiFiles:file});
+      }
+    });
+  }
+
+  public componentDidMount() {
+    this._addcolumns(this._columns);
+    this._getFiles();
+  }
 
   public render(): JSX.Element {
     // By default, when the list is re-rendered on navigation or some other event,
@@ -99,8 +93,8 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       <div>
         <DetailsList
         key={this.state.key}
-        items={this.state.items}
-        columns={this.displayColumns}
+        items={this.state.apiFiles}
+        columns={this.state.apiColumn}
         onItemInvoked={this._navigate}
         initialFocusedIndex={this.state.initialFocusedIndex}
         ariaLabelForSelectionColumn="Toggle selection"
@@ -116,68 +110,6 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       items: generateItems(name + ' / '),
       initialFocusedIndex: 0,
       key: this.state.key + 1,
-    });
-  }
-//Loading the users and passing back the MicrosoftGraph.Permission[]
-  private _loadUser(): MicrosoftGraph.Permission[] {
-    let response: MicrosoftGraph.Permission[];
-    this.props.context.msGraphClientFactory
-    .getClient()
-    .then((client: MSGraphClient):any => {
-      let apiUrl: string = '/groups/'+this.props.group+'/drive/items/root/permissions';
-      client
-        .api(apiUrl)
-        .version("v1.0")
-        .get((error?, result?: any, rawResponse?: any):any => {
-          // handle the response
-          let apiResponse: MicrosoftGraph.Permission[];
-          if(error){
-            console.error(error);
-          }
-          if (result) {
-            console.log("Reached the Graph");
-            console.log(result.value.length);
-            result.value.forEach(element =>{
-              console.log(element.grantedTo.user.displayName);
-              apiResponse.push(element);
-            });
-            return result.value;
-          }
-        }
-      );
-    });
-    return response;
-  }
-
-  //setting the State to the API Call results
-  private _loadUser1(): void {
-
-    this.props.context.msGraphClientFactory
-    .getClient()
-    .then((client: MSGraphClient) => {
-      let apiUrl: string = '/groups/'+this.props.group+'/drive/items/root/permissions';
-      client
-        .api(apiUrl)
-        .version("v1.0")
-        .get((error?, result?: any, rawResponse?: any) => {
-          // handle the response
-          let response: MicrosoftGraph.Permission[];
-          if(error){
-            console.error(error);
-          }
-          if (result) {
-            console.log("Reached the Graph");
-            console.log(result.value.length);
-            for (let u of result.value){
-              console.log(u.grantedTo.user.displayName);
-            }
-            result.value.forEach(element =>{
-              response.push(element);
-            });
-            this.setState({userColumn:response});
-          }
-        }
-      );
     });
   }
 
@@ -198,11 +130,6 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
             }
             if (result) {
               resolve(result.value);
-              console.log("Reached the Graph");
-              console.log(result.value.length);
-              for (let u of result.value){
-                console.log(u.grantedTo.user.displayName);
-              }
             }
           }
         );
@@ -210,26 +137,27 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     });
   }
 
-  private _loadFiles(): MicrosoftGraph.DriveItem[] {
-    let driveFile: MicrosoftGraph.DriveItem[];
+  private _apiFiles(): any {
+    return new Promise<any>((resolve, reject)=>{
     this.props.context.msGraphClientFactory
-    .getClient()
-    .then((client: MSGraphClient): any => {
-      let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+this.state.parentFile+'/children';
-      client
-        .api(apiUrl)
-        .version("v1.0")
-        .get((err, res: MicrosoftGraph.DriveItem[]) => {
-          // handle the response
-          if(err){
-            console.error(err);
-          } else {
-            return res;
+      .getClient()
+      .then((client: MSGraphClient):any => {
+        let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+this.state.parentFile+'/children';
+        client
+          .api(apiUrl)
+          .version("v1.0")
+          .get((error?, result?: any, rawResponse?: any):any => {
+            // handle the response
+            if(error){
+              console.error(error);
+            }
+            if (result) {
+              resolve(result.value);
+            }
           }
-        }
-      );
+        );
+      });
     });
-    return driveFile;
   }
 }
 
