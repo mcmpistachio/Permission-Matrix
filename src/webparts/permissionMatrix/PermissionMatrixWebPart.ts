@@ -11,8 +11,6 @@ import { IPropertyFieldGroupOrPerson } from "@pnp/spfx-property-controls/lib/Pro
 import { selectProperties } from 'office-ui-fabric-react/lib/Utilities';
 
 export interface IPermissionMatrixWebPartProps {
-  description: string;
-  people: IPropertyFieldGroupOrPerson[];
   group: string;
   context: WebPartContext;
 }
@@ -23,8 +21,6 @@ export default class PermissionMatrixWebPart extends BaseClientSideWebPart <IPer
     const element: React.ReactElement<IPermissionMatrixProps> = React.createElement(
       PermissionMatrix,
       {
-        description: this.properties.description,
-        people: this.properties.people,
         group: this.context.pageContext.site.group.id,
         context: this.context
       }
@@ -42,30 +38,6 @@ export default class PermissionMatrixWebPart extends BaseClientSideWebPart <IPer
   }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
-    return {
-      pages: [
-        {
-          groups: [
-            {
-              groupName: 'Select Groups to Grant Permissions',
-              groupFields: [
-                PropertyFieldPeoplePicker('people', {
-                  label: 'PropertyFieldPeoplePicker',
-                  initialData: this.properties.people,
-                  allowDuplicate: false,
-                  principalType: [PrincipalType.Users, PrincipalType.SharePoint, PrincipalType.Security],
-                  onPropertyChange: this.onPropertyPaneFieldChanged,
-                  context: this.context,
-                  properties: this.properties,
-                  onGetErrorMessage: null,
-                  deferredValidationTime: 0,
-                  key: 'peopleFieldId'
-                })
-              ]
-            }
-          ]
-        }
-      ]
-    };
+    return ;
   }
 }

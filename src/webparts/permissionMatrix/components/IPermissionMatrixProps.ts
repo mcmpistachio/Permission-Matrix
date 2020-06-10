@@ -3,8 +3,6 @@ import { PageContext } from "@microsoft/sp-page-context";
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 
 export interface IPermissionMatrixProps {
-  description: string;
-  people: IPropertyFieldGroupOrPerson[];
   group: string;
   context: WebPartContext;
 }

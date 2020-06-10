@@ -4,27 +4,29 @@ import { IPermissionMatrixWebPartProps } from '../PermissionMatrixWebPart';
 import { escape } from '@microsoft/sp-lodash-subset';
 import DropPermissionItem from './DropPermission';
 import { DetailsList, IColumn } from 'office-ui-fabric-react/lib/DetailsList';
+import { Dropdown, DropdownMenuItemType, IDropdownOption, IDropdownProps } from 'office-ui-fabric-react/lib/Dropdown';
+import { Icon } from 'office-ui-fabric-react/lib/Icon';
 import { Label } from 'office-ui-fabric-react/lib/Label';
 import { Link } from 'office-ui-fabric-react/lib/Link';
+import { PrimaryButton } from 'office-ui-fabric-react';
 import * as MicrosoftGraph from '@microsoft/microsoft-graph-types';
 import { MSGraphClient } from '@microsoft/sp-http';
 import {SPHttpClient, SPHttpClientResponse} from '@microsoft/sp-http';
 import { concatStyleSets, ThemeSettingName } from 'office-ui-fabric-react/lib/Styling';
 
+
 export interface IDetailsListNavigatingFocusExampleState {
-  items: string[];
   initialFocusedIndex?: number;
-  parentFile: string;
   key: number;
   apiColumn?: IColumn[];
   apiFiles?: MicrosoftGraph.DriveItem[];
 }
 
+
 export default class PermissionMatrix extends React.Component<IPermissionMatrixWebPartProps, {}> {
   public state: IDetailsListNavigatingFocusExampleState = {
-    items: generateItems(''),
-    parentFile: "root",
     key: 0,
+    apiFiles: loadItem(),
   };
 
   private _columns: IColumn[] = [
@@ -32,7 +34,12 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       key: 'file',
       name: "File",
       minWidth: 60,
-      fieldName: 'name'
+      onRender: item => (
+        // tslint:disable-next-line:jsx-no-lambda
+        <Link key={item.id} onClick={() => this._getFiles(item.id)}>
+          {item.name}
+        </Link>
+      )
     }
   ];
 
@@ -45,7 +52,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
           key: 'permission',
           name: 'Permission',
           minWidth: 60,
-          onRender: item => (<DropPermissionItem/>),
+          onRender: item => (<DropPermissionItem />),
           }
         );
         this.setState({dispColumn:column});
@@ -55,7 +62,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
             key: each.grantedTo.user.id,
             name: each.grantedTo.user.displayName,
             minWidth: 60,
-            onRender: item => (<DropPermissionItem/>),
+            onRender: item => (<DropPermissionItem />),
           });
         }
         this.setState({apiColumn:column});
@@ -64,24 +71,24 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   }
 
   //Need to finish!!! Handle the API push to state
-  private _getFiles():void {
-    this._apiFiles().then(element =>{
-      console.log(element);
-      if (element == null) {
-        //what to do?
-      } else {
-        let file:MicrosoftGraph.DriveItem[];
-        for (let each of element){
-          file.push(each);
-        }
-        this.setState({apiFiles:file});
+  private _getFiles(parent:string):void {
+    this._apiFiles(parent).then(element =>{
+      // console.log(element);
+      let file = new Array<MicrosoftGraph.DriveItem>();
+      for (let each of element){
+        file.push({
+          id: each.id,
+          name: each.name
+        });
       }
+      this.setState({apiFiles:file});
+      console.log(this.state.apiFiles);
     });
   }
 
   public componentDidMount() {
     this._addcolumns(this._columns);
-    this._getFiles();
+    this._getFiles('root');
   }
 
   public render(): JSX.Element {
@@ -91,11 +98,11 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
 
     return (
       <div>
+        <PrimaryButton text="Home" onClick={()=> this._getFiles('root')}/>
         <DetailsList
         key={this.state.key}
         items={this.state.apiFiles}
         columns={this.state.apiColumn}
-        onItemInvoked={this._navigate}
         initialFocusedIndex={this.state.initialFocusedIndex}
         ariaLabelForSelectionColumn="Toggle selection"
         ariaLabelForSelectAllCheckbox="Toggle selection for all items"
@@ -103,14 +110,6 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       />
       </div>
     );
-  }
-
-  private _navigate = (name: string) => {
-    this.setState({
-      items: generateItems(name + ' / '),
-      initialFocusedIndex: 0,
-      key: this.state.key + 1,
-    });
   }
 
   //Promising the API result
@@ -137,12 +136,12 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     });
   }
 
-  private _apiFiles(): any {
+  private _apiFiles(parent:string): any {
     return new Promise<any>((resolve, reject)=>{
     this.props.context.msGraphClientFactory
       .getClient()
       .then((client: MSGraphClient):any => {
-        let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+this.state.parentFile+'/children';
+        let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+parent+'/children';
         client
           .api(apiUrl)
           .version("v1.0")
@@ -162,6 +161,12 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
 }
 
 
-function generateItems(parent: string): string[] {
-  return Array.prototype.map.call('ABCDEFGHI', (name: string) => parent + 'Folder ' + name);
+function loadItem():MicrosoftGraph.DriveItem[]{
+  let item = new Array<MicrosoftGraph.DriveItem>();
+  item.push({
+      id: 'Loading',
+      name: 'Loading'
+
+  });
+  return item;
 }
