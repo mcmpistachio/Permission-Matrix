@@ -2,7 +2,7 @@ import * as React from 'react';
 import styles from './PermissionMatrix.module.scss';
 import { IPermissionMatrixWebPartProps } from '../PermissionMatrixWebPart';
 import { escape } from '@microsoft/sp-lodash-subset';
-import DropPermissionItem from './DropPermission';
+import { DropPermissionItem, IDropdownPermissionProps } from './DropPermission';
 import { DetailsList, IColumn } from 'office-ui-fabric-react/lib/DetailsList';
 import { Dropdown, DropdownMenuItemType, IDropdownOption, IDropdownProps } from 'office-ui-fabric-react/lib/Dropdown';
 import { Icon } from 'office-ui-fabric-react/lib/Icon';
@@ -44,25 +44,26 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   ];
 
   private _addcolumns(column: IColumn[]): void {
-    this._apiUser().then(element => {
+    this._apiUser('root').then(element => {
       // console.log(element.length);
       // console.log(element);
       if (element == null){
-        column.push({
-          key: 'permission',
-          name: 'Permission',
-          minWidth: 60,
-          onRender: item => (<DropPermissionItem />),
-          }
-        );
+        // column.push({
+        //   key: 'permission',
+        //   name: 'Permission',
+        //   minWidth: 60,
+        //   onRender: item => (<DropPermissionItem />),
+        //   }
+        // );
         this.setState({dispColumn:column});
       } else {
         for (let each of element){
+          let perm:MicrosoftGraph.Permission = each;
           column.push({
             key: each.grantedTo.user.id,
             name: each.grantedTo.user.displayName,
             minWidth: 60,
-            onRender: item => (<DropPermissionItem />),
+            onRender: item => (<DropPermissionItem column={perm} context={this.props.context} group={this.props.group} item={item}/>),
           });
         }
         this.setState({apiColumn:column});
@@ -70,16 +71,12 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     });
   }
 
-  //Need to finish!!! Handle the API push to state
   private _getFiles(parent:string):void {
     this._apiFiles(parent).then(element =>{
       // console.log(element);
       let file = new Array<MicrosoftGraph.DriveItem>();
       for (let each of element){
-        file.push({
-          id: each.id,
-          name: each.name
-        });
+        file.push(each);
       }
       this.setState({apiFiles:file});
       console.log(this.state.apiFiles);
@@ -113,12 +110,12 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   }
 
   //Promising the API result
-  private _apiUser(): any {
+  private _apiUser(file:string): any {
     return new Promise<any>((resolve, reject)=>{
     this.props.context.msGraphClientFactory
       .getClient()
       .then((client: MSGraphClient):any => {
-        let apiUrl: string = '/groups/'+this.props.group+'/drive/items/root/permissions';
+        let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+file+'/permissions';
         client
           .api(apiUrl)
           .version("v1.0")
