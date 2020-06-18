@@ -11,7 +11,6 @@ import { IPropertyFieldGroupOrPerson } from "@pnp/spfx-property-controls/lib/Pro
 import { selectProperties } from 'office-ui-fabric-react/lib/Utilities';
 
 export interface IPermissionMatrixWebPartProps {
-  group: string;
   context: WebPartContext;
 }
 
@@ -21,7 +20,6 @@ export default class PermissionMatrixWebPart extends BaseClientSideWebPart <IPer
     const element: React.ReactElement<IPermissionMatrixProps> = React.createElement(
       PermissionMatrix,
       {
-        group: this.context.pageContext.site.group.id,
         context: this.context
       }
     );

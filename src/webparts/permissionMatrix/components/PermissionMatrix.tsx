@@ -13,6 +13,7 @@ import * as MicrosoftGraph from '@microsoft/microsoft-graph-types';
 import { MSGraphClient } from '@microsoft/sp-http';
 import {SPHttpClient, SPHttpClientResponse} from '@microsoft/sp-http';
 import { concatStyleSets, ThemeSettingName } from 'office-ui-fabric-react/lib/Styling';
+import { WebPartContext } from "@microsoft/sp-webpart-base";
 
 
 export interface IDetailsListNavigatingFocusExampleState {
@@ -21,7 +22,6 @@ export interface IDetailsListNavigatingFocusExampleState {
   apiColumn?: IColumn[];
   apiFiles?: MicrosoftGraph.DriveItem[];
 }
-
 
 export default class PermissionMatrix extends React.Component<IPermissionMatrixWebPartProps, {}> {
   public state: IDetailsListNavigatingFocusExampleState = {
@@ -45,25 +45,17 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
 
   private _addcolumns(column: IColumn[]): void {
     this._apiUser('root').then(element => {
-      // console.log(element.length);
-      // console.log(element);
       if (element == null){
-        // column.push({
-        //   key: 'permission',
-        //   name: 'Permission',
-        //   minWidth: 60,
-        //   onRender: item => (<DropPermissionItem />),
-        //   }
-        // );
         this.setState({dispColumn:column});
       } else {
         for (let each of element){
-          let perm:MicrosoftGraph.Permission = each;
           column.push({
             key: each.grantedTo.user.id,
             name: each.grantedTo.user.displayName,
             minWidth: 60,
-            onRender: item => (<DropPermissionItem column={perm} context={this.props.context} group={this.props.group} item={item}/>),
+            onRender: item => (
+              <DropPermissionItem context={this.props.context} file={item} perm={this._apiUser(item.id)} group={each.grantedTo.user}/>
+            ),
           });
         }
         this.setState({apiColumn:column});
@@ -74,12 +66,13 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   private _getFiles(parent:string):void {
     this._apiFiles(parent).then(element =>{
       // console.log(element);
+
       let file = new Array<MicrosoftGraph.DriveItem>();
       for (let each of element){
         file.push(each);
       }
       this.setState({apiFiles:file});
-      console.log(this.state.apiFiles);
+
     });
   }
 
@@ -115,7 +108,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     this.props.context.msGraphClientFactory
       .getClient()
       .then((client: MSGraphClient):any => {
-        let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+file+'/permissions';
+        let apiUrl: string = '/groups/'+this.props.context.pageContext.site.group.id+'/drive/items/'+file+'/permissions';
         client
           .api(apiUrl)
           .version("v1.0")
@@ -138,7 +131,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     this.props.context.msGraphClientFactory
       .getClient()
       .then((client: MSGraphClient):any => {
-        let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+parent+'/children';
+        let apiUrl: string = '/groups/'+this.props.context.pageContext.site.group.id+'/drive/items/'+parent+'/children';
         client
           .api(apiUrl)
           .version("v1.0")
@@ -157,13 +150,34 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   }
 }
 
-
-function loadItem():MicrosoftGraph.DriveItem[]{
-  let item = new Array<MicrosoftGraph.DriveItem>();
-  item.push({
-      id: 'Loading',
-      name: 'Loading'
-
+function loadItem(): MicrosoftGraph.DriveItem[] {
+  let fileLoad = new Array<MicrosoftGraph.DriveItem>();
+  fileLoad.push({
+    id: 'Loading',
+    name: 'Loading'
   });
-  return item;
+  return fileLoad;
 }
+
+// function apiFile(context: WebPartContext, parent: string) {
+//   return new Promise<any>((resolve, reject)=>{
+//     context.msGraphClientFactory
+//       .getClient()
+//       .then((client: MSGraphClient):any => {
+//         let apiUrl: string = '/groups/'+context.pageContext.site.group.id+'/drive/items/'+parent+'/children';
+//         client
+//           .api(apiUrl)
+//           .version("v1.0")
+//           .get((error?, result?: any, rawResponse?: any):any => {
+//             // handle the response
+//             if(error){
+//               console.error(error);
+//             }
+//             if (result) {
+//               resolve(result.value);
+//             }
+//           }
+//         );
+//       });
+//     });
+// }
