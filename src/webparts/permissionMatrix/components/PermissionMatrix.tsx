@@ -35,7 +35,6 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
       name: "File",
       minWidth: 60,
       onRender: item => (
-        // tslint:disable-next-line:jsx-no-lambda
         <Link key={item.id} onClick={() => this._getFiles(item.id)}>
           {item.name}
         </Link>
@@ -54,7 +53,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
             name: each.grantedTo.user.displayName,
             minWidth: 60,
             onRender: item => (
-              <DropPermissionItem context={this.props.context} file={item} perm={this._apiUser(item.id)} group={each.grantedTo.user}/>
+              <DropPermissionItem context={this.props.context} file={item} groupColumn={each}/>
             ),
           });
         }
@@ -64,13 +63,13 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
   }
 
   private _getFiles(parent:string):void {
-    this._apiFiles(parent).then(element =>{
-      // console.log(element);
-
+    this.setState({apiFiles:loadItem()});
+    this._apiFile(parent).then(element =>{
       let file = new Array<MicrosoftGraph.DriveItem>();
       for (let each of element){
         file.push(each);
       }
+      console.log(file);
       this.setState({apiFiles:file});
 
     });
@@ -112,7 +111,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
         client
           .api(apiUrl)
           .version("v1.0")
-          .get((error?, result?: any, rawResponse?: any):any => {
+          .get((error?, result?: any, rawResponse?: any): any => {
             // handle the response
             if(error){
               console.error(error);
@@ -126,7 +125,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
     });
   }
 
-  private _apiFiles(parent:string): any {
+  private _apiFile(parent:string): any {
     return new Promise<any>((resolve, reject)=>{
     this.props.context.msGraphClientFactory
       .getClient()
@@ -135,13 +134,19 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
         client
           .api(apiUrl)
           .version("v1.0")
-          .get((error?, result?: any, rawResponse?: any):any => {
+          .get(async (error?, result?: any, rawResponse?: any) => {
             // handle the response
             if(error){
               console.error(error);
             }
             if (result) {
-              resolve(result.value);
+              let file = new Array<MicrosoftGraph.DriveItem>();
+              for (let each of result.value){
+                let eachItem: MicrosoftGraph.DriveItem = each;
+                eachItem.permissions = await this._apiUser(eachItem.id);
+                file.push(eachItem);
+              }
+              resolve(file);
             }
           }
         );
@@ -158,26 +163,3 @@ function loadItem(): MicrosoftGraph.DriveItem[] {
   });
   return fileLoad;
 }
-
-// function apiFile(context: WebPartContext, parent: string) {
-//   return new Promise<any>((resolve, reject)=>{
-//     context.msGraphClientFactory
-//       .getClient()
-//       .then((client: MSGraphClient):any => {
-//         let apiUrl: string = '/groups/'+context.pageContext.site.group.id+'/drive/items/'+parent+'/children';
-//         client
-//           .api(apiUrl)
-//           .version("v1.0")
-//           .get((error?, result?: any, rawResponse?: any):any => {
-//             // handle the response
-//             if(error){
-//               console.error(error);
-//             }
-//             if (result) {
-//               resolve(result.value);
-//             }
-//           }
-//         );
-//       });
-//     });
-// }

@@ -14,11 +14,11 @@
     "postversion": "gulp dist"
   },
   "dependencies": {
-    "@fluentui/react": "^7.110.5",
+    "@fluentui/react": "^7.134.3",
     "@microsoft/sp-core-library": "1.10.0",
     "@microsoft/sp-lodash-subset": "1.10.0",
     "@microsoft/sp-office-ui-fabric-core": "1.10.0",
-    "@microsoft/sp-page-context": "^1.10.0",
+    "@microsoft/sp-page-context": "^1.11.0",
     "@microsoft/sp-property-pane": "1.10.0",
     "@microsoft/sp-webpart-base": "1.10.0",
     "@pnp/spfx-property-controls": "1.18.0",
@@ -26,7 +26,7 @@
     "@types/react": "16.8.8",
     "@types/react-dom": "16.8.3",
     "@types/webpack-env": "1.13.1",
-    "@uifabric/example-data": "^7.0.12",
+    "@uifabric/example-data": "^7.1.3",
     "office-ui-fabric-react": "6.189.2",
     "react": "16.8.5",
     "react-dom": "16.8.5"
@@ -35,7 +35,7 @@
     "@types/react": "16.8.8"
   },
   "devDependencies": {
-    "@microsoft/microsoft-graph-types": "^1.12.0",
+    "@microsoft/microsoft-graph-types": "^1.20.0",
     "@microsoft/rush-stack-compiler-3.3": "0.3.5",
     "@microsoft/sp-build-web": "1.10.0",
     "@microsoft/sp-module-interfaces": "1.10.0",
@@ -47,9 +47,9 @@
     "gulp": "~3.9.1",
     "gulp-sequence": "1.0.0",
     "gulp-stylelint": "^13.0.0",
-    "stylelint": "^13.0.0",
+    "stylelint": "^13.7.0",
     "stylelint-config-standard": "^20.0.0",
-    "stylelint-scss": "^3.14.2",
-    "webpack-bundle-analyzer": "^3.6.0"
+    "stylelint-scss": "^3.18.0",
+    "webpack-bundle-analyzer": "^3.8.0"
   }
 }

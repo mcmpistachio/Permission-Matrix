@@ -10,8 +10,8 @@ import { WebPartContext } from "@microsoft/sp-webpart-base";
 export interface IDropdownPermissionProps {
   context: WebPartContext;
   file: MicrosoftGraph.DriveItem;
-  perm: MicrosoftGraph.Permission[];
-  group: MicrosoftGraph.Identity;
+  perm?: MicrosoftGraph.Permission;
+  groupColumn?: MicrosoftGraph.Identity;
 }
 
 export interface IDropdownPermissionState {
@@ -32,7 +32,7 @@ export class DropPermissionItem extends React.Component<IDropdownPermissionProps
   };
 
   public componentDidMount(){
-    this.dropDownDefault();
+    // this.dropDownDefault();
   }
 
   public render(): JSX.Element {
@@ -69,58 +69,19 @@ export class DropPermissionItem extends React.Component<IDropdownPermissionProps
     );
   }
 
-  private dropDownDefault(){
-    for (let each of this.props.perm){
-      if (each.grantedTo.user.id == this.props.group.id){
-        this.setState({role:each.roles});
+  private dropDownDefault(): string[] {
+    let groupRoles: string[];
+    for (let each of this.props.file.permissions){
+      if (each.grantedTo.user.id == this.props.groupColumn.id){
+        groupRoles = each.roles;
       }
     }
+    if (groupRoles == null){
+      return ['noaccess'];
+    } else {
+      return groupRoles;
+    }
   }
-
-  // private _getPermission(){
-  //   this._filePermission(this.props.item.id).then(element =>{
-  //     for (let each of element){
-  //       if (each.grantedTo.user.displayName == this.props.column.grantedTo.user.displayName){
-  //         this.setState({
-  //           role: each.roles
-  //         });
-  //       }
-  //     }
-  //   });
-  // }
-
-  // private _filePermission(file:string): any {
-  //   return new Promise<any>((resolve, reject)=>{
-  //   this.props.context.msGraphClientFactory
-  //     .getClient()
-  //     .then((client: MSGraphClient):any => {
-  //       let apiUrl: string = '/groups/'+this.props.group+'/drive/items/'+file+'/permissions';
-  //       client
-  //         .api(apiUrl)
-  //         .version("v1.0")
-  //         .get((error?, result?: any, rawResponse?: any):any => {
-  //           // handle the response
-  //           if(error){
-  //             console.error(error);
-  //           }
-  //           if (result) {
-  //             let response: any;
-  //             for (let each of result.value){
-  //               if (each.grantedTo.user.id == this.props.column.grantedTo.user.id){
-  //                 response = each.roles;
-  //               }
-  //             }
-  //             if (response == null){
-  //               response = ['noaccess'];
-  //             }
-  //             console.log(response);
-  //             resolve(response);
-  //           }
-  //         }
-  //       );
-  //     });
-  //   });
-  // }
 }
 
 // function defaultRole(groupID:string, file:string, columnID:string, property: WebPartContext): any {
