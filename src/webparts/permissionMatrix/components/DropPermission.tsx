@@ -21,18 +21,19 @@ export interface IDropdownPermissionState {
 const exampleOptions: IDropdownOption[] = [
   { key: 'noaccess', text: 'No Access', data: { icon: 'Blocked12' } },
   { key: 'read', text: 'Read', data: { icon: 'View' } },
-  { key: 'write', text: 'Write', data: { icon: 'Edit' } }
+  { key: 'write', text: 'Write', data: { icon: 'Edit' } },
+  { key: 'owner', text: 'Owner', data: { icon: 'Teamwork' } }
 ];
 
 
 export class DropPermissionItem extends React.Component<IDropdownPermissionProps,{}> {
   public state: IDropdownPermissionState = {
     // role: defaultRole(this.props.group.toString(), this.props.item.id.toString(), this.props.column.grantedTo.user.id.toString(), this.props.context),
-    role: ['noaccess'],
+    role: this.dropDownDefault(),
   };
 
   public componentDidMount(){
-    // this.dropDownDefault();
+    this._dropDownDefault();
   }
 
   public render(): JSX.Element {
@@ -70,51 +71,31 @@ export class DropPermissionItem extends React.Component<IDropdownPermissionProps
   }
 
   private dropDownDefault(): string[] {
-    let groupRoles: string[];
-    for (let each of this.props.file.permissions){
-      if (each.grantedTo.user.id == this.props.groupColumn.id){
-        groupRoles = each.roles;
-      }
-    }
-    if (groupRoles == null){
+    if (this.props.file.permissions == null){
+      // console.log(this.props.file.name);
       return ['noaccess'];
     } else {
-      return groupRoles;
+      for (let each of this.props.file.permissions){
+        // console.log(this.props.file.name);
+        if (each.grantedTo.user.displayName == this.props.groupColumn.displayName){
+          let role = new Array<string>();
+          role.concat(each.roles);
+          console.log(each.roles);
+          return each.roles;
+        }
+      }
+    }
+  }
+
+  private _dropDownDefault(): void {
+    if (this.props.file.permissions == null){
+      this.setState({role:['noaccess']});
+    } else {
+      for (let each of this.props.file.permissions){
+        if (each.grantedTo.user.displayName == this.props.groupColumn.displayName){
+          this.setState({role:each.roles});
+        }
+      }
     }
   }
 }
-
-// function defaultRole(groupID:string, file:string, columnID:string, property: WebPartContext): any {
-//   return new Promise<any>((resolve, reject)=>{
-//     property.msGraphClientFactory
-//       .getClient()
-//       .then((client: MSGraphClient):any => {
-//         let apiUrl: string = '/groups/'+groupID+'/drive/items/'+file+'/permissions';
-//         client
-//           .api(apiUrl)
-//           .version("v1.0")
-//           .get((error?, result?: any, rawResponse?: any):any => {
-//             // handle the response
-//             if(error){
-//               console.error(error);
-//             }
-//             if (result) {
-//               let response: any;
-//               for (let each of result.value){
-//                 if (each.grantedTo.user.id == columnID){
-//                   console.log(each.grantedTo.user.displayName);
-//                   console.log(each.roles);
-//                   response = each.roles;
-//                 }
-//               }
-//               if (response == null){
-//                 response = ['noaccess'];
-//               }
-//               console.log(response);
-//               resolve(response);
-//             }
-//           }
-//         );
-//       });
-//     });
-//   }

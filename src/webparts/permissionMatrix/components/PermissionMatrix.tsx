@@ -53,7 +53,7 @@ export default class PermissionMatrix extends React.Component<IPermissionMatrixW
             name: each.grantedTo.user.displayName,
             minWidth: 60,
             onRender: item => (
-              <DropPermissionItem context={this.props.context} file={item} groupColumn={each}/>
+              <DropPermissionItem context={this.props.context} file={item} groupColumn={each.grantedTo.user}/>
             ),
           });
         }
